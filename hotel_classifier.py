@@ -143,7 +143,7 @@ clf.fit(
     eval_set=[(X_train, y_train), (X_valid, y_valid)],
     eval_name=['train', 'valid'],
     eval_metric=['auc'],
-    max_epochs=max_epochs, patience=30,
+    max_epochs=max_epochs, patience=25,
     batch_size=1024, virtual_batch_size=128,
     num_workers=0,
     weights=1,
@@ -211,9 +211,9 @@ print(clf.feature_importances_)
 explain_matrix, masks = clf.explain(X_test)
 
 # Plot global feature importance
-_, axs = plt.subplots(4, 1, figsize=(20, 20))
+_, axs = plt.subplots(1, 3, figsize=(20, 20))
 
-for i in range(4):
+for i in range(3):
     axs[i].imshow(masks[i][:50])
     axs[i].set_title(f"mask {i}")
     axs[i].set_xticklabels(labels=features, rotation=45)
