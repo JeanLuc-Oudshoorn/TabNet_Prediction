@@ -17,7 +17,7 @@ n_samples = 130000
 
 # Create dataset
 X, y = make_classification(n_samples=n_samples, n_features=9, n_informative=9, n_redundant=0, n_classes=2,
-                           n_clusters_per_class=10, class_sep=1.0, flip_y=0.05, weights=[0.72, 0.28])
+                           n_clusters_per_class=6, class_sep=0.8, flip_y=0.05, weights=[0.72, 0.28])
 
 # Add outcome to the dataset
 data[14] = y
@@ -52,7 +52,7 @@ print(X.describe())
 X = X.values
 
 # Color discretizer
-col_est = KBinsDiscretizer(n_bins=12, encode='ordinal', strategy='uniform')
+col_est = KBinsDiscretizer(n_bins=12, encode='ordinal', strategy='kmeans')
 data[0] = col_est.fit_transform(X[:, 2].reshape(-1, 1))
 
 # Brand discretizer
@@ -76,7 +76,7 @@ data[4] = data[4].ffill()
 data.groupby(4)[2].nunique().value_counts()
 
 # Create Product group 1 ID
-pg_est = KBinsDiscretizer(n_bins=18, encode='ordinal', strategy='uniform')
+pg_est = KBinsDiscretizer(n_bins=18, encode='ordinal', strategy='kmeans')
 data[5] = pg_est.fit_transform(X[:, 0].reshape(-1, 1))
 
 # Create Product cat ID
@@ -84,19 +84,19 @@ pc_est = KBinsDiscretizer(n_bins=6, encode='ordinal', strategy='uniform')
 data[6] = pc_est.fit_transform(data[5].values.reshape(-1, 1))
 
 # Size discretizer
-size_est = KBinsDiscretizer(n_bins=6, encode='ordinal', strategy='uniform')
+size_est = KBinsDiscretizer(n_bins=6, encode='ordinal', strategy='kmeans')
 data[7] = size_est.fit_transform(X[:, 3].reshape(-1, 1))
 
 # Sold to country discretizer
-scountry_est = KBinsDiscretizer(n_bins=14, encode='ordinal', strategy='uniform')
+scountry_est = KBinsDiscretizer(n_bins=14, encode='ordinal', strategy='kmeans')
 data[8] = scountry_est.fit_transform(X[:, 1].reshape(-1, 1))
 
 # Prod. country discretizer
-pcountry_est = KBinsDiscretizer(n_bins=6, encode='ordinal', strategy='uniform')
+pcountry_est = KBinsDiscretizer(n_bins=6, encode='ordinal', strategy='kmeans')
 data[9] = pcountry_est.fit_transform(X[:, 5].reshape(-1, 1))
 
 # Fit discretizer
-fit_est = KBinsDiscretizer(n_bins=4, encode='ordinal', strategy='uniform')
+fit_est = KBinsDiscretizer(n_bins=4, encode='ordinal', strategy='kmeans')
 data[10] = fit_est.fit_transform(X[:, 6].reshape(-1, 1))
 
 # Price
@@ -104,7 +104,7 @@ data[11] = np.round(X[:, 8] * 140 + np.random.randint(low=2, high=160, size=1300
            - np.random.choice([-100, -50, 0], size=130000, replace=True, p=[0.6, 0.2, 0.2])
 
 # Month discretizer
-month_est = KBinsDiscretizer(n_bins=12, encode='ordinal', strategy='uniform')
+month_est = KBinsDiscretizer(n_bins=12, encode='ordinal', strategy='kmeans')
 data[12] = month_est.fit_transform(X[:, 7].reshape(-1, 1)) + 1
 
 # Day of month discretizer
@@ -277,7 +277,7 @@ importances = pd.DataFrame.from_dict(dict(zip(X_test.columns, result['importance
 importances.plot.barh()
 
 # Mapping color
-col_list = ['yellow', 'orange', 'brown', 'black', 'white', 'blue', 'red', 'beige', 'multi', 'green', 'violet', 'unknown']
+col_list = ['Yellow', 'Orange', 'Brown', 'Black', 'White', 'Blue', 'Red', 'Beige', 'Multi', 'Green', 'Violet', 'Unknown']
 color_dict = dict(zip(np.arange(0, 12), col_list))
 
 data['color'] = data['color'].map(color_dict)
@@ -343,9 +343,13 @@ data['is_returned'] = np.where(data['product_group'] == 'Dress', np.random.choic
 
 data['is_returned'] = np.where(data['prod_country'] == 'Vietnam', np.random.choice([0, 1], size=len(data), p=[0.89, 0.11]), data['is_returned'])
 
+data['is_returned'] = np.where(data['color'] == 'Multi', np.random.choice([0, 1], size=len(data), p=[0.58, 0.42]), data['is_returned'])
+
 # Drop columns
-data.drop(['cust_ret', 'cust_pur', 'pc_cust_ret', 'pc_cust_pur', 'n_item', 'n_item_pc', 'days_after_order'], axis=1, inplace=True)
-data.drop(['day'], axis=1, inplace=True)
+data.drop(['cust_ret', 'cust_pur', 'pc_cust_ret', 'pc_cust_pur', 'n_item', 'n_item_pc', 'days_after_order', 'month', 'day'], axis=1, inplace=True)
+
+# Item trans ID
+data['item_trans_id'] = np.arange(0, 129999)
 
 # Write CSV
 data.to_csv('fashion_data.csv', index=False)
