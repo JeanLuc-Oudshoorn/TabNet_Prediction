@@ -192,7 +192,7 @@ loaded_clf.load_model(saved_filepath)
 
 # Check that the loaded model behaves the same way
 loaded_preds = loaded_clf.predict_proba(X_test)
-loaded_test_auc = roc_auc_score(y_score=loaded_preds[:,1], y_true=y_test)
+loaded_test_auc = roc_auc_score(y_score=loaded_preds[:, 1], y_true=y_test)
 
 print(f"FINAL TEST SCORE FOR HOTEL CANCELLATION DATA : {loaded_test_auc}")
 
